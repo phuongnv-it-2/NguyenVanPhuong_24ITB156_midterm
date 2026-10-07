@@ -1,0 +1,17 @@
+# compiled program and build output
+/myls
+/build/
+*.o
+*.d
+*.a
+
+# debugging leftovers
+core
+core.*
+vgcore.*
+
+# editor / OS files
+*.swp
+*~
+.vscode/
+.DS_Store
