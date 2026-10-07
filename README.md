@@ -2,10 +2,10 @@
 
 ## 1. Thông tin sinh viên
 
-| | |
-|---|---|
-| **Họ tên** | Nguyễn Văn Phương |
-| **Mã sinh viên** | 24ITB156 |
+|                       |                                                                   |
+| --------------------- | ----------------------------------------------------------------- |
+| **Họ tên**            | Nguyễn Văn Phương                                                 |
+| **Mã sinh viên**      | 24ITB156                                                          |
 | **GitHub repository** | https://github.com/phuongnv-it-2/NguyenVanPhuong_24ITB156_midterm |
 
 ## 2. Giới thiệu
@@ -22,27 +22,27 @@ myls [-AacdFfhiklnqRrSstuw] [file ...]
 
 ## 3. Các chức năng đã cài đặt
 
-| Option | Chức năng |
-|---|---|
-| `-A` | Hiện mọi entry trừ `.` và `..`. **Luôn bật khi chạy bằng root** (đúng như manual). |
-| `-a` | Hiện tất cả entry kể cả `.` và `..`. |
-| `-c` | Dùng thời gian đổi trạng thái (ctime) cho `-t` và `-l`. |
-| `-d` | Liệt kê thư mục như file thường (không đi vào trong, không đi theo symlink ở operand). |
-| `-F` | Thêm ký hiệu sau tên: `/` thư mục, `*` thực thi, `@` symlink, `%` whiteout, `=` socket, `\|` FIFO. |
-| `-f` | Không sắp xếp. |
-| `-h` | Kích thước dạng dễ đọc (`1.5K`, `23M`…) cho `-l` và `-s`; ghi đè `-k`. |
-| `-i` | In số inode. |
-| `-k` | Với `-s`, block tính theo đơn vị 1024 byte; ghi đè `-h`. |
-| `-l` | Định dạng dài: mode, số link, owner, group, kích thước, ngày giờ, tên (`-> đích` với symlink). |
-| `-n` | Như `-l` nhưng owner/group hiển thị bằng số. |
-| `-q` | Ký tự không in được trong tên → `?` (mặc định khi output là terminal). |
-| `-w` | In nguyên ký tự thô (mặc định khi output không phải terminal). |
-| `-R` | Liệt kê đệ quy thư mục con. |
-| `-r` | Đảo ngược thứ tự sắp xếp. |
-| `-S` | Sắp xếp theo kích thước, lớn nhất trước. |
-| `-s` | In số block thực sự dùng (đơn vị 512 byte hoặc `BLOCKSIZE`, làm tròn lên). |
-| `-t` | Sắp xếp theo thời gian, mới nhất trước (bằng nhau thì theo tên). |
-| `-u` | Dùng thời gian truy cập (atime) cho `-t` và `-l`. |
+| Option | Chức năng                                                                                          |
+| ------ | -------------------------------------------------------------------------------------------------- |
+| `-A`   | Hiện mọi entry trừ `.` và `..`. **Luôn bật khi chạy bằng root** (đúng như manual).                 |
+| `-a`   | Hiện tất cả entry kể cả `.` và `..`.                                                               |
+| `-c`   | Dùng thời gian đổi trạng thái (ctime) cho `-t` và `-l`.                                            |
+| `-d`   | Liệt kê thư mục như file thường (không đi vào trong, không đi theo symlink ở operand).             |
+| `-F`   | Thêm ký hiệu sau tên: `/` thư mục, `*` thực thi, `@` symlink, `%` whiteout, `=` socket, `\|` FIFO. |
+| `-f`   | Không sắp xếp.                                                                                     |
+| `-h`   | Kích thước dạng dễ đọc (`1.5K`, `23M`…) cho `-l` và `-s`; ghi đè `-k`.                             |
+| `-i`   | In số inode.                                                                                       |
+| `-k`   | Với `-s`, block tính theo đơn vị 1024 byte; ghi đè `-h`.                                           |
+| `-l`   | Định dạng dài: mode, số link, owner, group, kích thước, ngày giờ, tên (`-> đích` với symlink).     |
+| `-n`   | Như `-l` nhưng owner/group hiển thị bằng số.                                                       |
+| `-q`   | Ký tự không in được trong tên → `?` (mặc định khi output là terminal).                             |
+| `-w`   | In nguyên ký tự thô (mặc định khi output không phải terminal).                                     |
+| `-R`   | Liệt kê đệ quy thư mục con.                                                                        |
+| `-r`   | Đảo ngược thứ tự sắp xếp.                                                                          |
+| `-S`   | Sắp xếp theo kích thước, lớn nhất trước.                                                           |
+| `-s`   | In số block thực sự dùng (đơn vị 512 byte hoặc `BLOCKSIZE`, làm tròn lên).                         |
+| `-t`   | Sắp xếp theo thời gian, mới nhất trước (bằng nhau thì theo tên).                                   |
+| `-u`   | Dùng thời gian truy cập (atime) cho `-t` và `-l`.                                                  |
 
 ### Các cặp option ghi đè nhau (option **đứng sau cùng** thắng)
 
@@ -95,29 +95,81 @@ NguyenVanPhuong_24ITB156_midterm/
     └── run_tests.sh # so sánh với ls hệ thống
 ```
 
-## 5. Biên dịch và chạy
+## 5. Hướng dẫn biên dịch và chạy
 
-Yêu cầu: Linux/UNIX, `gcc` (hoặc `cc`) và `make`.
+### 5.1. Yêu cầu
 
-```bash
-make            # tạo file thực thi ./myls
-make test       # chạy bộ test (so sánh với ls hệ thống)
-make clean      # xóa build/ và myls
-```
-
-Ví dụ:
+Linux hoặc UNIX (Ubuntu, Debian, macOS, WSL…) có `gcc` (hoặc `cc`), `make` và `git`.
 
 ```bash
-./myls                    # thư mục hiện tại
-./myls -l /etc            # long format
-./myls -lah src           # long + mọi file + dễ đọc
-./myls -lS include        # theo kích thước
-./myls -ltr               # cũ nhất trước
-./myls -R src             # đệ quy
-./myls -liF README.md src # inode + ký hiệu, nhiều operand
-./myls -ld /tmp           # thư mục như file (hiện bit sticky 't')
-BLOCKSIZE=1k ./myls -s .  # đơn vị block tùy chọn
+# Ubuntu / Debian / WSL: cài công cụ nếu chưa có
+sudo apt update && sudo apt install -y build-essential git
 ```
+
+### 5.2. Lấy mã nguồn và biên dịch
+
+```bash
+git clone https://github.com/phuongnv-it-2/NguyenVanPhuong_24ITB156_midterm.git
+cd NguyenVanPhuong_24ITB156_midterm
+make            # biên dịch, tạo file thực thi ./myls
+```
+
+Các lệnh khác của Makefile:
+
+```bash
+make test       # chạy bộ test (so sánh với ls của hệ thống)
+make clean
+```
+
+### 5.3. Cú pháp
+
+```
+./myls [-AacdFfhiklnqRrSstuw] [file ...]
+```
+
+Các option có thể viết gộp (`-lah`) hoặc tách rời (`-l -a -h`). Dùng `--` để
+kết thúc option, ví dụ `./myls -- -tên-file-bắt-đầu-bằng-dấu-gạch`. Không có
+operand thì chương trình liệt kê thư mục hiện tại.
+
+### 5.4. Ví dụ
+
+```bash
+./myls                      # thư mục hiện tại, mỗi file một dòng
+./myls -a                   # thêm file ẩn, kể cả . và ..
+./myls -l /etc              # định dạng dài
+./myls -lh src              # định dạng dài, kích thước dễ đọc (1.5K, 23M)
+./myls -lS include          # sắp xếp theo kích thước, lớn nhất trước
+./myls -ltr                 # sắp xếp theo thời gian, cũ nhất trước
+./myls -lu README.md        # hiện thời gian truy cập (atime)
+./myls -R src               # liệt kê đệ quy
+./myls -liF README.md src   # inode + ký hiệu loại file, nhiều operand
+./myls -ld /tmp             # thư mục /tmp như một file (thấy bit sticky 't')
+./myls -n /etc/passwd       # owner/group hiển thị bằng số
+./myls -s src               # số block (đơn vị 512 byte)
+BLOCKSIZE=1k ./myls -s src  # đổi đơn vị block bằng biến môi trường
+./myls -q                   # tên có ký tự lạ hiện '?'
+./myls /khong/ton/tai       # báo lỗi, exit status 1
+```
+
+Kiểm tra exit status của lần chạy vừa rồi: `echo $?` (0 là thành công, 1 là có lỗi).
+
+### 5.5. So sánh với `ls` hệ thống
+
+```bash
+diff <(./myls -a src) <(ls -1a src) && echo "giống nhau"
+```
+
+Một vài khác biệt có chủ ý so với `ls` của GNU được liệt kê ở mục 3
+(đơn vị block 512 byte, `-F` đặt ký hiệu sau tên symlink, `-f` không bật `-a`).
+
+### 5.6. Xử lý sự cố
+
+| Triệu chứng                                 | Cách xử lý                                                      |
+| ------------------------------------------- | --------------------------------------------------------------- |
+| `make: command not found` / `cc: not found` | Cài `build-essential` (xem 5.1).                                |
+| `Permission denied` khi chạy `./myls`       | `chmod +x myls` hoặc chạy lại `make`.                           |
+| Kết quả `-A` luôn có file ẩn                | Đang chạy bằng root; theo manual, `-A` luôn bật với super-user. |
+| Thay đổi mã mà chạy không đổi               | `make clean && make`.                                           |
 
 ## 6. Kiểm thử
 
