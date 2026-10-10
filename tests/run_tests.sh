@@ -1,5 +1,5 @@
 #!/bin/sh
-# So sánh myls với ls của hệ thống trên một thư mục thử nhỏ.
+# test case
 # Cách dùng (tại thư mục gốc của project):  make && sh tests/run_tests.sh
 MYLS="$(pwd)/myls"
 T=$(mktemp -d "${TMPDIR:-/tmp}/myls.XXXXXX") || exit 1
