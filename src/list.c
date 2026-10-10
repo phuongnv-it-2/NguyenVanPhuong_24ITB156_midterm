@@ -44,20 +44,24 @@ static int list_directory(const char *path, const struct ls_options *opt)
     size_t i;
 
     dir = opendir(path);
-    if (dir == NULL) {
+    if (dir == NULL)
+    {
         warn_errno(path);
         return 1;
     }
 
     entry_list_init(&list);
     errno = 0;
-    while ((de = readdir(dir)) != NULL) {
+    while ((de = readdir(dir)) != NULL)
+    {
         char *full;
 
-        if (is_visible(de->d_name, opt)) {
+        if (is_visible(de->d_name, opt))
+        {
             full = path_join(path, de->d_name);
             /* dùng lstat: symlink hiện như symlink, không đi theo (tránh lặp vô hạn với -R) */
-            if (entry_list_add(&list, de->d_name, full, 0) != 0) {
+            if (entry_list_add(&list, de->d_name, full, 0) != 0)
+            {
                 warn_errno(full);
                 status = 1;
             }
@@ -65,7 +69,8 @@ static int list_directory(const char *path, const struct ls_options *opt)
         }
         errno = 0;
     }
-    if (errno != 0) { /* readdir lỗi giữa chừng */
+    if (errno != 0)
+    {
         warn_errno(path);
         status = 1;
     }
@@ -79,11 +84,14 @@ static int list_directory(const char *path, const struct ls_options *opt)
     if (print_entries(&list, opt) != 0)
         status = 1;
 
-    if (opt->recursive) {
-        for (i = 0; i < list.len; i++) {
+    if (opt->recursive)
+    {
+        for (i = 0; i < list.len; i++)
+        {
             const struct entry *e = &list.items[i];
 
-            if (S_ISDIR(e->st.st_mode) && !is_dot_or_dotdot(e->name)) {
+            if (S_ISDIR(e->st.st_mode) && !is_dot_or_dotdot(e->name))
+            {
                 printf("\n%s:\n", e->path);
                 if (list_directory(e->path, opt) != 0)
                     status = 1;
@@ -97,7 +105,7 @@ static int list_directory(const char *path, const struct ls_options *opt)
 
 int list_operands(int argc, char **argv, const struct ls_options *opt)
 {
-    static char *default_operand[] = { ".", NULL };
+    static char *default_operand[] = {".", NULL};
     struct entry_list files, dirs;
     int status = 0;
     int printed_something = 0;
@@ -106,7 +114,8 @@ int list_operands(int argc, char **argv, const struct ls_options *opt)
     size_t i;
     int k;
 
-    if (argc == 0) { /* không có operand thì dùng thư mục hiện tại */
+    if (argc == 0)
+    { /* không có operand thì dùng thư mục hiện tại */
         argc = 1;
         argv = default_operand;
     }
@@ -120,8 +129,10 @@ int list_operands(int argc, char **argv, const struct ls_options *opt)
     entry_list_init(&files);
     entry_list_init(&dirs);
 
-    for (k = 0; k < argc; k++) {
-        if (entry_list_add(&files, argv[k], argv[k], follow) != 0) {
+    for (k = 0; k < argc; k++)
+    {
+        if (entry_list_add(&files, argv[k], argv[k], follow) != 0)
+        {
             warn_errno(argv[k]);
             status = 1;
             continue;
@@ -137,7 +148,8 @@ int list_operands(int argc, char **argv, const struct ls_options *opt)
     sort_entries(&files, opt);
     sort_entries(&dirs, opt);
 
-    if (files.len > 0) {
+    if (files.len > 0)
+    {
         if (print_entries(&files, opt) != 0)
             status = 1;
         printed_something = 1;
@@ -145,7 +157,8 @@ int list_operands(int argc, char **argv, const struct ls_options *opt)
 
     /* Tên thư mục chỉ hiện khi liệt kê nhiều operand hoặc dùng -R. */
     show_headers = (argc > 1) || opt->recursive;
-    for (i = 0; i < dirs.len; i++) {
+    for (i = 0; i < dirs.len; i++)
+    {
         if (printed_something)
             putchar('\n');
         if (show_headers)

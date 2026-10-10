@@ -57,6 +57,7 @@ int parse_options(int argc, char **argv, struct ls_options *opt,
     opt->sort_by = SORT_NAME;
     opt->block_unit = blocksize_from_env();
 
+    opterr = 0; /* tự in thông báo lỗi để luôn bắt đầu bằng "myls:" */
     while ((c = getopt(argc, argv, OPTSTRING)) != -1) {
         switch (c) {
         case 'A': opt->almost_all = 1; break;
@@ -78,7 +79,8 @@ int parse_options(int argc, char **argv, struct ls_options *opt,
         case 'S': opt->sort_by = SORT_SIZE; break;
         case 't': opt->sort_by = SORT_TIME; break;
         case 's': opt->show_blocks = 1; break;
-        default:  /* getopt đã tự in thông báo lỗi */
+        default:  /* option không hợp lệ: optopt là ký tự sai */
+            fprintf(stderr, "%s: invalid option -- '%c'\n", PROG_NAME, optopt);
             usage();
             return -1;
         }

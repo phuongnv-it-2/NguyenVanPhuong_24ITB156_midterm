@@ -80,6 +80,42 @@ a=$("$MYLS" -dR sub | head -1); [ "$a" = "sub:" ] && pass=$((pass+1)) || { fail=
 "$MYLS" apple.txt >/dev/null;    [ $? -eq 0 ] && pass=$((pass+1)) || { fail=$((fail+1)); echo "FAIL: exit status 0"; }
 out=$("$MYLS" apple.txt nonexistent 2>/dev/null); [ "$out" = "apple.txt" ] && pass=$((pass+1)) || { fail=$((fail+1)); echo "FAIL: continues after error"; }
 
+# --- Các ca biên bổ sung ---------------------------------------------------
+# -d không có operand: liệt kê chính "."
+out=$("$MYLS" -d); [ "$out" = "." ] && pass=$((pass+1)) || { fail=$((fail+1)); echo "FAIL: -d without operand"; }
+
+# -f: không sắp xếp (cùng thứ tự readdir với ls -f, bỏ . và ..)
+a=$("$MYLS" -f sub); b=$(ls -f sub | grep -v '^\.\.\?$')
+[ "$a" = "$b" ] && pass=$((pass+1)) || { fail=$((fail+1)); echo "FAIL: -f order"; }
+
+# -S và -t ghi đè nhau: option đứng sau thắng
+a=$("$MYLS" -St . | head -1); b=$("$MYLS" -t . | head -1)
+[ "$a" = "$b" ] && pass=$((pass+1)) || { fail=$((fail+1)); echo "FAIL: -St == -t"; }
+a=$("$MYLS" -tS .); b=$("$MYLS" -S .)
+[ "$a" = "$b" ] && pass=$((pass+1)) || { fail=$((fail+1)); echo "FAIL: -tS == -S"; }
+
+# Vòng lặp symlink: không treo, không crash, hiển thị như symlink
+ln -s loop2 loop1; ln -s loop1 loop2
+out=$("$MYLS" loop1); [ "$out" = "loop1" ] && pass=$((pass+1)) || { fail=$((fail+1)); echo "FAIL: symlink loop"; }
+"$MYLS" -R . >/dev/null 2>&1; [ $? -eq 0 ] && pass=$((pass+1)) || { fail=$((fail+1)); echo "FAIL: -R with symlink loop"; }
+
+# Operand rỗng là lỗi, không phải "."
+"$MYLS" "" >/dev/null 2>&1; [ $? -ne 0 ] && pass=$((pass+1)) || { fail=$((fail+1)); echo "FAIL: empty operand"; }
+
+# Thông báo lỗi option bắt đầu bằng tên chương trình
+out=$("$MYLS" -Z 2>&1 | head -1); case $out in "myls: invalid option"*) pass=$((pass+1));; *) fail=$((fail+1)); echo "FAIL: option error text: $out";; esac
+
+# Lỗi ghi stdout (đầy đĩa) phải được báo và trả về exit status khác 0
+if [ -w /dev/full ]; then
+    "$MYLS" . >/dev/full 2>/dev/null; [ $? -ne 0 ] && pass=$((pass+1)) || { fail=$((fail+1)); echo "FAIL: write error"; }
+fi
+
+# uid/gid không có trong hệ thống phải hiển thị bằng số (cần quyền root để chown)
+if [ "$(id -u)" -eq 0 ]; then
+    : > ghost; chown 54321:54321 ghost
+    out=$("$MYLS" -l ghost | awk '{print $3, $4}'); [ "$out" = "54321 54321" ] && pass=$((pass+1)) || { fail=$((fail+1)); echo "FAIL: numeric uid/gid fallback: $out"; }
+fi
+
 # -q / -w với tên file chứa ký tự điều khiển
 touch "$(printf 'bad\001name')"
 out=$("$MYLS" -q | grep 'bad'); [ "$out" = "bad?name" ] && pass=$((pass+1)) || { fail=$((fail+1)); echo "FAIL: -q"; }

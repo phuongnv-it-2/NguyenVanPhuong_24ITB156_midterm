@@ -68,6 +68,8 @@ myls [-AacdFfhiklnqRrSstuw] [file ...]
 - `-F` đặt ký hiệu ngay sau tên, kể cả với symlink (`link@ -> đích`).
 - Trạng thái archive `a`/`A` cần cờ file của BSD (`st_flags`), không có trên Linux nên không hiển thị; `w` (whiteout) chỉ có trên hệ thống định nghĩa `S_IFWHT`.
 - Hết bộ nhớ → in thông báo `out of memory` và thoát (không segfault).
+- Đường dẫn dài hơn `PATH_MAX` (cây thư mục lồng quá sâu) không làm chương trình crash: `myls` báo `File name too long` cho nhánh đó rồi tiếp tục các nhánh khác (exit status 1).
+- Lỗi ghi ra stdout (ví dụ `> /dev/full`) được phát hiện và báo cáo bằng exit status 1.
 
 ## 4. Cấu trúc project
 
@@ -118,7 +120,8 @@ Các lệnh khác của Makefile:
 
 ```bash
 make test       # chạy bộ test (so sánh với ls của hệ thống)
-make clean
+make asan       # build với AddressSanitizer + UBSan để bắt lỗi bộ nhớ
+make clean      # xóa build/ và myls (cũng dùng sau make asan)
 ```
 
 ### 5.3. Cú pháp
@@ -173,8 +176,8 @@ Một vài khác biệt có chủ ý so với `ls` của GNU được liệt kê
 
 ## 6. Kiểm thử
 
-- `tests/run_tests.sh` tạo thư mục thử (file thường, file ẩn, symlink thường và hỏng, FIFO, thư mục con) và so sánh output với `ls` hệ thống cho `-a -A -r -t -tr -F -i -d -R -l -n -lS -lc -lu`, cùng các kiểm tra riêng về: mũi tên symlink, định dạng ngày, `-h`, quy tắc ghi đè option, exit status, `-q`/`-w`, tiếp tục sau lỗi.
-- Đã chạy thêm với AddressSanitizer + UBSan trên nhiều tổ hợp option, thư mục 3000 file, `/dev`, symlink dài, thư mục rỗng và thư mục không có quyền đọc — không có lỗi bộ nhớ.
+- `tests/run_tests.sh` tạo thư mục thử (file thường, file ẩn, symlink thường và hỏng, FIFO, thư mục con) và so sánh output với `ls` hệ thống cho `-a -A -r -t -tr -F -i -d -R -l -n -lS -lc -lu`, cùng các kiểm tra riêng về: mũi tên symlink, định dạng ngày, `-h`, quy tắc ghi đè option (kể cả `-S`/`-t`), exit status, `-q`/`-w`, tiếp tục sau lỗi, `-d` không operand, `-f`, vòng lặp symlink, operand rỗng, lỗi ghi `/dev/full`, uid/gid không tồn tại hiển thị bằng số.
+- Đã chạy thêm với AddressSanitizer + UBSan trên nhiều tổ hợp option, thư mục 3000 file, `/dev`, symlink dài, thư mục rỗng và thư mục không có quyền đọc — không có lỗi bộ nhớ. Có thể tự chạy lại bằng `make asan && make test`.
 - Makefile bật `-Wall -Wextra -Wpedantic`, biên dịch không có warning.
 
 ## 7. Git
