@@ -52,7 +52,7 @@ myls [-AacdFfhiklnqRrSstuw] [file ...]
 
 - Không có operand → liệt kê thư mục hiện tại.
 - Operand không phải thư mục được in **trước**; nhóm file và nhóm thư mục được sắp xếp **riêng**, theo thứ tự từ điển (`strcmp`).
-- Có nhiều operand hoặc dùng `-R` thì mỗi thư mục có dòng tiêu đề `tên:` và cách nhau bằng dòng trống.
+- Chỉ khi có **nhiều operand** thì mỗi thư mục có dòng tiêu đề `tên:`; với `-R`, các thư mục **con** luôn có tiêu đề (thư mục gốc duy nhất thì không), các khối cách nhau bằng dòng trống — đúng như `ls` của NetBSD.
 - Mặc định mỗi entry một dòng.
 - `-i`, `-s`, `-l` được ngăn cách bằng khoảng trắng và các cột được căn thẳng hàng.
 - Long format: bit setuid/setgid (`s`/`S`), sticky (`t`/`T`); file thiết bị hiển thị `major, minor` ở cột kích thước; dòng `total N` được in trước nội dung mỗi thư mục (với `-s` thì chỉ in khi output là terminal, như manual).
@@ -76,7 +76,7 @@ myls [-AacdFfhiklnqRrSstuw] [file ...]
 ```
 NguyenVanPhuong_24ITB156_midterm/
 ├── .gitignore
-├── Makefile
+├── Makefile         # chạy được với cả GNU make và BSD make (NetBSD)
 ├── README.md
 ├── include/
 │   ├── entry.h      # struct entry, danh sách entry
@@ -121,7 +121,7 @@ Các lệnh khác của Makefile:
 ```bash
 make test       # chạy bộ test (so sánh với ls của hệ thống)
 make asan       # build với AddressSanitizer + UBSan để bắt lỗi bộ nhớ
-make clean      # xóa build/ và myls (cũng dùng sau make asan)
+make clean      # xóa các file .o và myls (cũng dùng sau make asan)
 ```
 
 ### 5.3. Cú pháp
@@ -191,4 +191,32 @@ git remote add origin https://github.com/phuongnv-it-2/NguyenVanPhuong_24ITB156_
 git push -u origin main
 ```
 
-`.gitignore` loại trừ `myls`, thư mục `build/`, `*.o`, `*.d`, file core và file tạm của editor.
+`.gitignore` loại trừ file thực thi `myls`, các file object `*.o`, `*.d`, file core và file tạm của editor.
+
+## 8. Chạy trên NetBSD
+
+Chương trình dùng trình biên dịch `cc` (gcc) và BSD `make` có sẵn của NetBSD; Makefile viết theo cú pháp chung nên **không cần cài `gmake`**. Đã kiểm tra build bằng GNU make và BSD make (`bmake`) trên Linux; nên chạy lại `make test` trên máy NetBSD của bạn để xác nhận.
+
+```sh
+# 1. Lấy mã nguồn (cách không cần cài thêm gì: dùng ftp có sẵn của NetBSD)
+ftp -o myls.tar.gz https://github.com/phuongnv-it-2/NguyenVanPhuong_24ITB156_midterm/archive/refs/heads/main.tar.gz
+tar xzf myls.tar.gz
+cd NguyenVanPhuong_24ITB156_midterm-main
+
+# 2. Biên dịch và kiểm thử
+make
+make test
+
+# 3. Chạy
+./myls -l /etc
+```
+
+Nếu muốn dùng `git`: `export PKG_PATH="https://cdn.NetBSD.org/pub/pkgsrc/packages/NetBSD/$(uname -p)/$(uname -r)/All"` rồi `pkg_add pkgin && pkgin install git` (cần quyền root), sau đó `git clone` như mục 5.2.
+
+So sánh với `ls` của NetBSD:
+
+```sh
+./myls -l /etc > /tmp/a.txt; ls -l /etc > /tmp/b.txt; diff /tmp/a.txt /tmp/b.txt && echo GIONG
+```
+
+Định dạng cột của `-l` theo NetBSD: hai dấu cách sau mode, owner và group.

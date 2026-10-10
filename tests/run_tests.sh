@@ -2,8 +2,8 @@
 # So sánh myls với ls của hệ thống trên một thư mục thử nhỏ.
 # Cách dùng (tại thư mục gốc của project):  make && sh tests/run_tests.sh
 MYLS="$(pwd)/myls"
-T=$(mktemp -d) || exit 1
-O=$(mktemp -d) || exit 1   # đầu ra tạm, để ngoài thư mục thử
+T=$(mktemp -d "${TMPDIR:-/tmp}/myls.XXXXXX") || exit 1
+O=$(mktemp -d "${TMPDIR:-/tmp}/myls.XXXXXX") || exit 1   # đầu ra tạm, để ngoài thư mục thử
 trap 'rm -rf "$T" "$O"' EXIT
 pass=0; fail=0
 
@@ -19,11 +19,16 @@ ln -s apple.txt link
 ln -s sub dirlink
 ln -s nowhere broken
 mkfifo fifo
-touch -d '2020-01-02 03:04:05' apple.txt
-touch -d '2021-05-06 07:08:09' zebra.txt
+touch -t 202001020304.05 apple.txt
+touch -t 202105060708.09 zebra.txt
 
 # Với root, -A luôn bật (theo man page) nên ls tham chiếu cũng cần -A.
 REF=""; [ "$(id -u)" -eq 0 ] && REF="-A"
+
+norm() { # chuẩn hóa một file output để so sánh
+    if [ "$(uname -s)" = NetBSD ]; then cat "$1"; else tr -s ' ' <"$1"; fi |
+        awk 'NR==1 && $0==".:" {next} {print}'
+}
 
 check() { # check "mô tả" "tham số myls" "tham số ls"
     desc=$1; mine=$2; ref=$3
@@ -31,8 +36,13 @@ check() { # check "mô tả" "tham số myls" "tham số ls"
     "$MYLS" $mine >"$O/mine" 2>"$O/err"; rc1=$?
 
     ls $ref   >"$O/ref" 2>/dev/null
-    if cmp -s "$O/mine" "$O/ref"; then pass=$((pass+1))
-    else fail=$((fail+1)); echo "FAIL: $desc  (myls $mine)"; diff "$O/mine" "$O/ref" | head -5; fi
+    # ls của GNU, NetBSD... canh cột bằng số dấu cách khác nhau, nên gộp dấu
+    # cách liên tiếp trước khi so sánh (định dạng cột của myls có test riêng).
+    # Trên NetBSD so sánh CHÍNH XÁC từng ký tự; nơi khác thì gộp dấu cách.
+    # GNU ls -R in thêm dòng ".:" ở đầu (NetBSD thì không) nên bỏ dòng đó.
+    norm "$O/mine" >"$O/mine.n"; norm "$O/ref" >"$O/ref.n"
+    if cmp -s "$O/mine.n" "$O/ref.n"; then pass=$((pass+1))
+    else fail=$((fail+1)); echo "FAIL: $desc  (myls $mine)"; diff "$O/mine.n" "$O/ref.n" | head -5; fi
 }
 
 check "default"              ""          "$REF -1"
@@ -59,11 +69,18 @@ out=$("$MYLS" -l link); case $out in *"link -> apple.txt") pass=$((pass+1));; *)
 out=$("$MYLS" -l dirlink); case $out in *"dirlink -> sub") pass=$((pass+1));; *) fail=$((fail+1)); echo "FAIL: -l on dir symlink shows link";; esac
 out=$("$MYLS" dirlink); [ "$out" = "inner.txt" ] || [ "$out" = "deep
 inner.txt" ] && pass=$((pass+1)) || { fail=$((fail+1)); echo "FAIL: dir symlink followed"; }
+# Định dạng cột kiểu NetBSD: 2 dấu cách sau mode, owner và group
+out=$("$MYLS" -l apple.txt); case $out in "-rw-r--r--  1 "*) pass=$((pass+1));; *) fail=$((fail+1)); echo "FAIL: NetBSD-style spacing after mode: $out";; esac
+out=$("$MYLS" -l apple.txt | awk '{print NF}'); [ "$out" = "9" ] && pass=$((pass+1)) || { fail=$((fail+1)); echo "FAIL: -l must have 9 fields, got $out"; }
 out=$("$MYLS" -ld zebra.txt); case $out in -rwx*) pass=$((pass+1));; *) fail=$((fail+1)); echo "FAIL: mode string";; esac
 out=$("$MYLS" -l apple.txt); case $out in *"Jan  2  2020 apple.txt") pass=$((pass+1));; *) fail=$((fail+1)); echo "FAIL: old date shows year: $out";; esac
 out=$("$MYLS" -lh apple.txt); case $out in *" 6B "*) pass=$((pass+1));; *) fail=$((fail+1)); echo "FAIL: -lh: $out";; esac
 out=$("$MYLS" -lk sub | head -1); case $out in "total "*) pass=$((pass+1));; *) fail=$((fail+1)); echo "FAIL: -l total line";; esac
 out=$("$MYLS" -R | grep -c ':$'); [ "$out" -ge 3 ] && pass=$((pass+1)) || { fail=$((fail+1)); echo "FAIL: -R headers"; }
+
+# -R: không in tiêu đề cho thư mục gốc khi chỉ có một operand (như NetBSD)
+out=$("$MYLS" -R sub | head -1); [ "$out" != "sub:" ] && [ "$out" != ".:" ] && pass=$((pass+1)) || { fail=$((fail+1)); echo "FAIL: -R one operand must have no root header"; }
+out=$("$MYLS" -R sub empty | head -1); [ "$out" = "empty:" ] && pass=$((pass+1)) || { fail=$((fail+1)); echo "FAIL: -R two operands need headers: $out"; }
 
 # Quy tắc ghi đè: option đứng sau thắng
 a=$("$MYLS" -ln apple.txt); b=$("$MYLS" -n apple.txt)
@@ -72,7 +89,7 @@ a=$("$MYLS" -nl apple.txt); b=$("$MYLS" -l apple.txt)
 [ "$a" = "$b" ] && pass=$((pass+1)) || { fail=$((fail+1)); echo "FAIL: -nl == -l"; }
 a=$("$MYLS" -Rd sub); b=$("$MYLS" -d sub)
 [ "$a" = "$b" ] && pass=$((pass+1)) || { fail=$((fail+1)); echo "FAIL: -Rd == -d"; }
-a=$("$MYLS" -dR sub | head -1); [ "$a" = "sub:" ] && pass=$((pass+1)) || { fail=$((fail+1)); echo "FAIL: -dR recurses"; }
+a=$("$MYLS" -dR sub | grep -c '^sub/deep:$'); [ "$a" = "1" ] && pass=$((pass+1)) || { fail=$((fail+1)); echo "FAIL: -dR recurses"; }
 
 # Lỗi và exit status
 "$MYLS" nonexistent 2>/dev/null; [ $? -ne 0 ] && pass=$((pass+1)) || { fail=$((fail+1)); echo "FAIL: exit status for missing file"; }

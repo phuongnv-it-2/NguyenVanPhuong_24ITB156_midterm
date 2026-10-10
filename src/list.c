@@ -155,8 +155,11 @@ int list_operands(int argc, char **argv, const struct ls_options *opt)
         printed_something = 1;
     }
 
-    /* Tên thư mục chỉ hiện khi liệt kê nhiều operand hoặc dùng -R. */
-    show_headers = (argc > 1) || opt->recursive;
+    /*
+     * Giống ls của NetBSD: tên thư mục ở mức operand chỉ hiện khi có nhiều
+     * operand. Với -R, các thư mục con luôn có tiêu đề (xem list_directory).
+     */
+    show_headers = (argc > 1);
     for (i = 0; i < dirs.len; i++)
     {
         if (printed_something)

@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
+#include <sys/types.h> /* major(), minor() trên NetBSD */
 #include <time.h>
 #include <unistd.h>
 #ifdef __linux__
@@ -210,7 +211,8 @@ static void print_long_columns(const struct stat *file_stat,
     group_string(file_stat->st_gid, opt->numeric_ids, group, sizeof group);
     size_string(file_stat, opt, size, sizeof size);
     time_string(file_stat, opt, now, timestamp, sizeof timestamp);
-    printf("%s %*ju %-*s %-*s %*s %s ", mode, (int)widths->link_count,
+    /* Giống ls của NetBSD: hai dấu cách sau mode, owner và group. */
+    printf("%s  %*ju %-*s  %-*s  %*s %s ", mode, (int)widths->link_count,
            (uintmax_t)file_stat->st_nlink, (int)widths->owner, owner,
            (int)widths->group, group, (int)widths->size, size, timestamp);
 }
