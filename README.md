@@ -176,6 +176,7 @@ Một vài khác biệt có chủ ý so với `ls` của GNU được liệt kê
 
 ## 6. Kiểm thử
 
+- `make test` hiện chạy **50 test, tất cả đều qua** (đã kiểm tra trên Linux với GNU make/bmake và trên NetBSD 10.1 thật).
 - `tests/run_tests.sh` tạo thư mục thử (file thường, file ẩn, symlink thường và hỏng, FIFO, thư mục con) và so sánh output với `ls` hệ thống cho `-a -A -r -t -tr -F -i -d -R -l -n -lS -lc -lu`, cùng các kiểm tra riêng về: mũi tên symlink, định dạng ngày, `-h`, quy tắc ghi đè option (kể cả `-S`/`-t`), exit status, `-q`/`-w`, tiếp tục sau lỗi, `-d` không operand, `-f`, vòng lặp symlink, operand rỗng, lỗi ghi `/dev/full`, uid/gid không tồn tại hiển thị bằng số.
 - Đã chạy thêm với AddressSanitizer + UBSan trên nhiều tổ hợp option, thư mục 3000 file, `/dev`, symlink dài, thư mục rỗng và thư mục không có quyền đọc — không có lỗi bộ nhớ. Có thể tự chạy lại bằng `make asan && make test`.
 - Makefile bật `-Wall -Wextra -Wpedantic`, biên dịch không có warning.
@@ -220,3 +221,24 @@ So sánh với `ls` của NetBSD:
 ```
 
 Định dạng cột của `-l` theo NetBSD: hai dấu cách sau mode, owner và group.
+
+## 9. Kết quả đối chiếu với `ls` của NetBSD 10.1
+
+Đã chạy trên máy NetBSD 10.1 thật (người dùng thường, không phải root):
+
+| Kiểm tra | Kết quả |
+| -------- | ------- |
+| `make` | Biên dịch sạch, không warning |
+| `make test` | `passed: 50, failed: 0` |
+| `-l`, `-la`, `-lS`, `-lt`, `-F`, `-i`, `-s`, `-lsi` trên `/etc` | Giống `ls` NetBSD từng ký tự |
+| `-l /dev/null /dev/tty` (cột major, minor của file thiết bị) | Giống |
+| `-lh /etc` | Còn khác (xem bên dưới) |
+| `-R /etc` | Còn khác (xem bên dưới) |
+
+### Các điểm còn khác biệt đã biết
+
+- **`-lh`**: cách làm tròn/đổi đơn vị của `humanize_number(3)` trong `ls` NetBSD có thể khác `myls` (`myls` đổi đơn vị từ 1024, hiển thị `1.5K`, `23M`…). Manual của đề chỉ yêu cầu "kích thước theo bytes ở dạng dễ đọc", không quy định chính xác cách làm tròn.
+- **`-R /etc`**: phép so sánh ở trên gộp cả stderr; khi chạy bằng người dùng thường, thư mục không có quyền đọc làm thông báo lỗi khác tên chương trình (`ls:` và `myls:`) và có thể xen kẽ khác thứ tự. Phần output chính chưa được xác nhận là khác hay không.
+
+Hai điểm này không ảnh hưởng tới các hành vi bắt buộc trong manual của đề (các option, thứ tự sắp xếp, định dạng long, exit status).
+
